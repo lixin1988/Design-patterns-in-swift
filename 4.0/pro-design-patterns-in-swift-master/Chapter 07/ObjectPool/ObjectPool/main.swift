@@ -1,22 +1,22 @@
 import Foundation
 
-var queue = dispatch_queue_create("workQ", DISPATCH_QUEUE_CONCURRENT);
-var group = dispatch_group_create();
+var queue = DispatchQueue(label:"workQ", attributes:[.concurrent])
+var group = DispatchGroup()
 
-println("Starting...");
+print("Starting...")
 
 for i in 1 ... 20 {
-    dispatch_group_async(group, queue, {() in
-        var book = Library.checkoutBook("reader#\(i)");
-        if (book != nil) {
-            NSThread.sleepForTimeInterval(Double(rand() % 2));
-            Library.returnBook(book!);
-        }
-    });
+  queue.async(group: group, execute: {
+    let book = Library.checkoutBook(reader: "reader#\(i)");
+    if (book != nil) {
+      Thread.sleep(forTimeInterval: TimeInterval(Int(arc4random())%3))
+      Library.returnBook(book: book!);
+    }
+  })
 }
 
-dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+group.wait()
 
-println("All blocks complete");
+print("All blocks complete");
 
 Library.printReport();
